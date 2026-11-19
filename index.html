@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseGuard AI — Accessible Predictive Maintenance System (₹ INR)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --bg-page: #090e1a;
+      --bg-surface: #11192b;
+      --bg-card: #162238;
+      --border-subtle: #2b3d5e;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --accent-primary: #38bdf8;
+      --accent-contrast: #0284c7;
+      --focus-ring: #fde047;
+    }
+
+    /* High-Contrast Mode (7:1+ WCAG AAA Contrast) */
+    html.high-contrast {
+      --bg-page: #000000;
+      --bg-surface: #0a0a0a;
+      --bg-card: #121212;
+      --border-subtle: #ffffff;
+      --text-primary: #ffffff;
+      --text-secondary: #f1f5f9;
+      --accent-primary: #fde047;
+      --accent-contrast: #facc15;
+      --focus-ring: #00ffff;
+    }
+
+    html.high-contrast body {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+    }
+
+    html.high-contrast .hc-surface {
+      background-color: #0a0a0a !important;
+      border-color: #ffffff !important;
+      border-width: 2px !important;
+    }
+
+    html.high-contrast .hc-card {
+      background-color: #121212 !important;
+      border-color: #ffffff !important;
+      border-width: 2px !important;
+    }
+
+    html.high-contrast .text-slate-300,
+    html.high-contrast .text-slate-400 {
+      color: #ffffff !important;
+    }
+
+    /* Large Text & Dyslexia-Friendly Spacing Mode */
+    html.large-text {
+      font-size: 115%;
+    }
+
+    html.large-text body {
+      letter-spacing: 0.03em;
+      word-spacing: 0.08em;
+      line-height: 1.65;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+    }
+
+    /* Clear 3px Focus Rings for Keyboard & Switch Navigation */
+    *:focus-visible {
+      outline: 3px solid var(--focus-ring) !important;
+      outline-offset: 2px !important;
+    }
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 8px;
+      z-index: 100;
+      background: #fde047;
+      color: #090e1a;
+      font-weight: 800;
+      padding: 12px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      left: 16px;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .pulse-dot {
+      animation: pulseDot 1.5s infinite ease-in-out;
+    }
+
+    html.reduced-motion .pulse-dot,
+    html.reduced-motion * {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-dot, * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- Skip to Main Content Link -->
+  <a href="#mainWorkspace" class="skip-link">Skip to main content</a>
+
+  <!-- Screen Reader Live Regions -->
+  <div id="politeAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="assertiveAnnouncer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- Accessibility Control Toolbar -->
+  <section aria-label="Accessibility Controls" class="hc-surface bg-[#0d1526] border-b border-[#2b3d5e] px-4 sm:px-6 py-2.5">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-200">
+        <i class="fa-solid fa-universal-access text-sky-400 text-base" aria-hidden="true"></i>
+        <span>Accessibility Tools</span>
+        <span class="hidden md:inline text-slate-400 font-normal">• Shortcuts: Alt+1 Dashboard, Alt+2 Deck, Alt+R Read Aloud</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Display and Audio Preferences">
+        <button
+          id="btnHighContrast"
+          type="button"
+          aria-pressed="false"
+          onclick="toggleHighContrast()"
+          class="px-3 py-1.5 rounded-lg bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-semibold text-slate-100 flex items-center gap-1.5 cursor-pointer"
+        >
+          <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+          <span>High Contrast</span>
+        </button>
+
+        <button
+          id="btnLargeText"
+          type="button"
+          aria-pressed="false"
+          onclick="toggleLargeText()"
+          class="px-3 py-1.5 rounded-lg bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-semibold text-slate-100 flex items-center gap-1.5 cursor-pointer"
+        >
+          <i class="fa-solid fa-text-height" aria-hidden="true"></i>
+          <span>Large Text &amp; Spacing</span>
+        </button>
+
+        <button
+          id="btnReducedMotion"
+          type="button"
+          aria-pressed="false"
+          onclick="toggleReducedMotion()"
+          class="px-3 py-1.5 rounded-lg bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-semibold text-slate-100 flex items-center gap-1.5 cursor-pointer"
+        >
+          <i class="fa-solid fa-pause-circle" aria-hidden="true"></i>
+          <span>Reduced Motion</span>
+        </button>
+
+        <button
+          id="btnReadAloud"
+          type="button"
+          aria-pressed="false"
+          onclick="readCurrentViewAloud()"
+          class="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+        >
+          <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
+          <span id="readAloudLabel">Read Aloud (Alt+R)</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Primary Application Header -->
+  <header class="hc-surface bg-[#11192b] border-b border-[#2b3d5e] px-4 sm:px-6 py-4 sticky top-0 z-30">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-sky-600 flex items-center justify-center text-white shadow-md" aria-hidden="true">
+          <i class="fa-solid fa-wave-square text-lg"></i>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">PulseGuard AI</h1>
+            <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-400/50">
+              ₹ INR • WCAG 2.2 AA
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300">Predictive Maintenance, RUL Forecasting &amp; Plant ₹ Cost Analytics</p>
+        </div>
+      </div>
+
+      <!-- Primary View Tablist & Controls -->
+      <div class="flex flex-wrap items-center gap-3">
+        <nav aria-label="Workspace View Switcher">
+          <div role="tablist" aria-label="Application Modes" class="inline-flex rounded-xl bg-[#090e1a] p-1 border border-[#2b3d5e]">
+            <button
+              id="tabDashboard"
+              role="tab"
+              type="button"
+              aria-selected="true"
+              aria-controls="panelDashboard"
+              tabindex="0"
+              onclick="activateTab('dashboard')"
+              class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 flex items-center gap-2 cursor-pointer"
+            >
+              <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+              <span>Live Dashboard</span>
+            </button>
+            <button
+              id="tabPresentation"
+              role="tab"
+              type="button"
+              aria-selected="false"
+              aria-controls="panelPresentation"
+              tabindex="-1"
+              onclick="activateTab('presentation')"
+              class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-200 hover:text-white flex items-center gap-2 cursor-pointer"
+            >
+              <i class="fa-solid fa-display" aria-hidden="true"></i>
+              <span>Presentation Deck</span>
+            </button>
+          </div>
+        </nav>
+
+        <div class="hidden xl:flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-xs font-mono font-bold">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-dot" aria-hidden="true"></span>
+          <span id="streamStatusText">LIVE TELEMETRY • 100 Hz</span>
+        </div>
+
+        <button
+          id="btnPauseStream"
+          type="button"
+          aria-pressed="false"
+          onclick="toggleStreamPause()"
+          class="px-3.5 py-2 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs sm:text-sm font-semibold text-slate-100 flex items-center gap-2 cursor-pointer"
+        >
+          <i class="fa-solid fa-pause" aria-hidden="true"></i>
+          <span>Pause Stream</span>
+        </button>
+
+        <button
+          type="button"
+          onclick="createWorkOrder()"
+          class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer"
+        >
+          <i class="fa-solid fa-wrench" aria-hidden="true"></i>
+          <span>Log ₹ Work Order</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Visible Status Toast (Non-Blocking Alternative to alert()) -->
+  <div
+    id="statusToast"
+    role="status"
+    aria-live="polite"
+    class="hidden fixed bottom-5 right-5 z-50 max-w-md hc-card bg-[#162238] border-2 border-sky-400 text-white px-4 py-3.5 rounded-xl shadow-2xl flex items-start gap-3"
+  >
+    <i class="fa-solid fa-circle-info text-sky-400 mt-0.5 text-base" aria-hidden="true"></i>
+    <p id="statusToastText" class="text-xs sm:text-sm font-medium leading-snug"></p>
+  </div>
+
+  <!-- Main Workspace Landmark -->
+  <main id="mainWorkspace" tabindex="-1" class="flex-1 flex flex-col">
+
+    <!-- =================================================================== -->
+    <!-- TABPANEL 1: LIVE EQUIPMENT TELEMETRY & WORK-ORDER DASHBOARD         -->
+    <!-- =================================================================== -->
+    <div
+      id="panelDashboard"
+      role="tabpanel"
+      aria-labelledby="tabDashboard"
+      class="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6"
+    >
+      <!-- Sidebar: Machine Selector, Fault Injection & Plant ₹ ROI -->
+      <aside aria-label="Equipment Fleet and Fault Simulation Controls" class="lg:col-span-3 flex flex-col gap-5">
+        <!-- Machine Selector -->
+        <section aria-labelledby="headingMachines" class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 id="headingMachines" class="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Plant Equipment (4 Assets)
+            </h2>
+            <span class="text-xs font-mono text-sky-300">Select Asset</span>
+          </div>
+          <div id="machineSelectorGroup" role="radiogroup" aria-label="Select Industrial Machine" class="flex flex-col gap-3"></div>
+        </section>
+
+        <!-- Fault Injection Simulator -->
+        <section aria-labelledby="headingFaultLab" class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+          <h2 id="headingFaultLab" class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+            Fault Simulation Lab
+          </h2>
+          <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+            Simulate machine states on the active asset to inspect sensor shifts, RUL impact, and ₹ cost avoidance.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5" role="group" aria-label="Inject Machine Condition">
+            <button type="button" onclick="injectCondition('normal')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-slate-100 flex items-center gap-2.5 cursor-pointer">
+              <i class="fa-solid fa-circle-check text-emerald-400" aria-hidden="true"></i>
+              <span>Normal Baseline</span>
+            </button>
+            <button type="button" onclick="injectCondition('bearing')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-slate-100 flex items-center gap-2.5 cursor-pointer">
+              <i class="fa-solid fa-triangle-exclamation text-amber-300" aria-hidden="true"></i>
+              <span>Bearing Wear (BPFI)</span>
+            </button>
+            <button type="button" onclick="injectCondition('misalignment')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-slate-100 flex items-center gap-2.5 cursor-pointer">
+              <i class="fa-solid fa-arrows-left-right text-amber-300" aria-hidden="true"></i>
+              <span>Shaft Misalignment (2X)</span>
+            </button>
+            <button type="button" onclick="injectCondition('thermal')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 border border-rose-400/60 text-xs font-bold text-rose-100 flex items-center gap-2.5 cursor-pointer">
+              <i class="fa-solid fa-octagon-exclamation fa-circle-exclamation text-rose-300" aria-hidden="true"></i>
+              <span>Thermal Overload</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Plant-Wide ₹ Economics Summary -->
+        <section aria-labelledby="headingPlantRoi" class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 id="headingPlantRoi" class="text-xs font-bold uppercase tracking-wider text-sky-300">
+              Plant ₹ Economics Summary
+            </h2>
+            <i class="fa-solid fa-indian-rupee-sign text-amber-300" aria-hidden="true"></i>
+          </div>
+          <dl class="space-y-2 text-xs">
+            <div class="flex justify-between py-1.5 border-b border-slate-800">
+              <dt class="text-slate-300">Plant CapEx Investment</dt>
+              <dd class="font-mono font-bold text-white">₹18,50,000</dd>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-800">
+              <dt class="text-slate-300">Projected Annual Savings</dt>
+              <dd class="font-mono font-bold text-emerald-300">₹1,12,00,000</dd>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-800">
+              <dt class="text-slate-300">Payback Period</dt>
+              <dd class="font-mono font-bold text-sky-300">2.0 Months</dd>
+            </div>
+            <div class="flex justify-between pt-1">
+              <dt class="text-slate-300">First-Year Net ROI</dt>
+              <dd class="font-mono font-bold text-amber-300">505%</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+
+      <!-- Main Telemetry & Maintenance Workspace -->
+      <div class="lg:col-span-9 flex flex-col gap-6">
+
+        <!-- Active Machine Banner + ₹ Cost Avoidance -->
+        <section aria-labelledby="activeAssetHeading" class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <h2 id="activeAssetHeading" class="text-lg sm:text-xl font-extrabold text-white">
+                Induction Motor M-101
+              </h2>
+              <span id="activeStatusBadge" class="inline-flex items-center gap-1.5 text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                <span>NORMAL</span>
+              </span>
+            </div>
+            <p id="activeCostHeadline" class="text-xs sm:text-sm text-slate-300 mt-1.5">
+              Preventive action costs ₹28,500 vs ₹4,80,000 unplanned breakdown — Net ₹4,51,500 saved.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3 text-xs font-mono">
+            <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-xl px-3 py-2.5">
+              <div class="text-slate-300">Downtime Rate</div>
+              <div id="bannerDowntimeCost" class="text-sm sm:text-base font-bold text-rose-300 mt-0.5">₹1,45,000/hr</div>
+            </div>
+            <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-xl px-3 py-2.5">
+              <div class="text-slate-300">Planned Repair</div>
+              <div id="bannerPlannedCost" class="text-sm sm:text-base font-bold text-emerald-300 mt-0.5">₹28,500</div>
+            </div>
+            <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-xl px-3 py-2.5">
+              <div class="text-slate-300">Unplanned Loss</div>
+              <div id="bannerBreakdownCost" class="text-sm sm:text-base font-bold text-amber-300 mt-0.5">₹4,80,000</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5 Real-Time Sensor & Health Gauges -->
+        <section aria-labelledby="headingGauges">
+          <h2 id="headingGauges" class="sr-only">Real-Time Sensor and Health Metrics</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+            <article class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+              <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                <span>Vibration RMS</span>
+                <i class="fa-solid fa-wave-square text-sky-400" aria-hidden="true"></i>
+              </div>
+              <div id="gaugeVibration" class="text-2xl font-mono font-extrabold text-white mt-2">1.45 mm/s</div>
+              <p class="text-xs text-slate-300 mt-1">ISO Limit: 4.50 mm/s</p>
+            </article>
+
+            <article class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+              <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                <span>Bearing Temp</span>
+                <i class="fa-solid fa-temperature-half text-amber-300" aria-hidden="true"></i>
+              </div>
+              <div id="gaugeTemperature" class="text-2xl font-mono font-extrabold text-white mt-2">56.4 °C</div>
+              <p class="text-xs text-slate-300 mt-1">Trip Limit: 85.0 °C</p>
+            </article>
+
+            <article class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+              <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                <span>Motor Current</span>
+                <i class="fa-solid fa-bolt text-sky-300" aria-hidden="true"></i>
+              </div>
+              <div id="gaugeCurrent" class="text-2xl font-mono font-extrabold text-white mt-2">42.8 A</div>
+              <p class="text-xs text-slate-300 mt-1">Rated Load: 55.0 A</p>
+            </article>
+
+            <article class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+              <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                <span>Remaining Life</span>
+                <i class="fa-solid fa-hourglass-half text-emerald-300" aria-hidden="true"></i>
+              </div>
+              <div id="gaugeRul" class="text-2xl font-mono font-extrabold text-emerald-300 mt-2">1,480 hrs</div>
+              <p id="gaugeRulDays" class="text-xs text-slate-300 mt-1">~62 days to service</p>
+            </article>
+
+            <article class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+              <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                <span>Failure Risk</span>
+                <i class="fa-solid fa-shield-halved text-rose-300" aria-hidden="true"></i>
+              </div>
+              <div id="gaugeRisk" class="text-2xl font-mono font-extrabold text-emerald-300 mt-2">4.2%</div>
+              <p id="gaugeRiskLabel" class="text-xs text-slate-300 mt-1">Low probability window</p>
+            </article>
+          </div>
+        </section>
+
+        <!-- Charts with Screen-Reader Accessible Data Table Toggles -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <!-- Telemetry Trend Chart / Table -->
+          <section aria-labelledby="headingTrendChart" class="xl:col-span-7 hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4 flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 id="headingTrendChart" class="text-sm sm:text-base font-bold text-white">
+                  Vibration &amp; Temperature Telemetry Trend
+                </h2>
+                <p class="text-xs text-slate-300">Recent 10 sampling intervals (100 Hz window)</p>
+              </div>
+              <button
+                id="btnToggleTrendTable"
+                type="button"
+                aria-expanded="false"
+                aria-controls="trendTableWrapper"
+                onclick="toggleChartTable('trend')"
+                class="px-3 py-1.5 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-sky-300 flex items-center gap-1.5 cursor-pointer"
+              >
+                <i class="fa-solid fa-table" aria-hidden="true"></i>
+                <span>View as Data Table</span>
+              </button>
+            </div>
+
+            <div id="trendCanvasWrapper">
+              <canvas
+                id="trendCanvas"
+                role="img"
+                aria-label="Line chart displaying recent vibration in millimeters per second and bearing temperature in Celsius for the selected machine."
+                class="w-full h-56 rounded-xl bg-[#090e1a] border border-[#2b3d5e]"
+              ></canvas>
+            </div>
+
+            <div id="trendTableWrapper" class="hidden overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <caption class="sr-only">Recent Vibration and Temperature Telemetry Readings</caption>
+                <thead>
+                  <tr class="border-b border-[#2b3d5e] text-slate-300">
+                    <th scope="col" class="py-2 pr-3">Sample Window</th>
+                    <th scope="col" class="py-2 px-3">Vibration (mm/s)</th>
+                    <th scope="col" class="py-2 px-3">Temperature (°C)</th>
+                    <th scope="col" class="py-2 pl-3">Current (A)</th>
+                  </tr>
+                </thead>
+                <tbody id="trendDataTableBody" class="divide-y divide-slate-800 font-mono"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- FFT Frequency Spectrum Chart / Table -->
+          <section aria-labelledby="headingFftChart" class="xl:col-span-5 hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4 flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 id="headingFftChart" class="text-sm sm:text-base font-bold text-white">
+                  FFT Frequency Spectrum
+                </h2>
+                <p class="text-xs text-slate-300">Harmonic bands: 1X, 2X, 3X, BPFI, High-Freq</p>
+              </div>
+              <button
+                id="btnToggleFftTable"
+                type="button"
+                aria-expanded="false"
+                aria-controls="fftTableWrapper"
+                onclick="toggleChartTable('fft')"
+                class="px-3 py-1.5 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-sky-300 flex items-center gap-1.5 cursor-pointer"
+              >
+                <i class="fa-solid fa-table" aria-hidden="true"></i>
+                <span>View as Data Table</span>
+              </button>
+            </div>
+
+            <div id="fftCanvasWrapper">
+              <canvas
+                id="fftCanvas"
+                role="img"
+                aria-label="Bar chart showing FFT frequency amplitudes across 1X RPM, 2X Misalignment, 3X Looseness, BPFI Bearing, and High Frequency bands."
+                class="w-full h-56 rounded-xl bg-[#090e1a] border border-[#2b3d5e]"
+              ></canvas>
+            </div>
+
+            <div id="fftTableWrapper" class="hidden overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <caption class="sr-only">FFT Frequency Band Amplitudes</caption>
+                <thead>
+                  <tr class="border-b border-[#2b3d5e] text-slate-300">
+                    <th scope="col" class="py-2 pr-3">Frequency Band</th>
+                    <th scope="col" class="py-2 px-3">Center Hz</th>
+                    <th scope="col" class="py-2 px-3">Amplitude (mm/s)</th>
+                    <th scope="col" class="py-2 pl-3">Diagnostic Meaning</th>
+                  </tr>
+                </thead>
+                <tbody id="fftDataTableBody" class="divide-y divide-slate-800 font-mono"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- Bottom Section: AI Diagnostics + Work-Order Generator & CSV Export -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <!-- AI Fault Classification & Recommended Action -->
+          <section aria-labelledby="headingDiagnosis" class="xl:col-span-5 hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4 flex flex-col justify-between gap-4">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h2 id="headingDiagnosis" class="text-sm sm:text-base font-bold text-white">
+                  AI Fault Diagnosis &amp; Attribution
+                </h2>
+                <span class="text-xs font-mono px-2.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/40">
+                  XGBoost + LSTM
+                </span>
+              </div>
+
+              <div id="diagnosisCallout" class="hc-card p-4 rounded-xl bg-[#162238] border-l-4 border-emerald-400">
+                <div class="flex items-center gap-2 font-bold text-sm text-white">
+                  <i id="diagnosisIcon" class="fa-solid fa-circle-check text-emerald-400" aria-hidden="true"></i>
+                  <span id="diagnosisTitle">Normal Operating Signature</span>
+                </div>
+                <p id="diagnosisSummary" class="text-xs sm:text-sm text-slate-200 mt-1.5 leading-relaxed">
+                  All vibration harmonics and thermal gradients are within healthy baseline tolerances. Continue standard condition monitoring.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Top Model Feature Drivers
+              </h3>
+              <div id="featureDriverBars" class="space-y-2.5"></div>
+            </div>
+          </section>
+
+          <!-- Maintenance Work-Order Generator & Log -->
+          <section aria-labelledby="headingWorkOrders" class="xl:col-span-7 hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4 flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 id="headingWorkOrders" class="text-sm sm:text-base font-bold text-white">
+                  Maintenance Work-Order Log (₹ INR)
+                </h2>
+                <p id="workOrderSummaryText" class="text-xs text-slate-300">
+                  3 active orders • Total planned spend: ₹93,500
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onclick="createWorkOrder()"
+                  class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                  <span>New Work Order</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="exportWorkOrdersCSV()"
+                  class="px-3 py-1.5 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-slate-100 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <i class="fa-solid fa-file-csv text-emerald-300" aria-hidden="true"></i>
+                  <span>Export CSV</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <caption class="sr-only">Maintenance Work Orders and Estimated Costs in Indian Rupees</caption>
+                <thead>
+                  <tr class="border-b border-[#2b3d5e] text-xs uppercase tracking-wider text-slate-300">
+                    <th scope="col" class="py-2.5 pr-3">Order ID</th>
+                    <th scope="col" class="py-2.5 px-3">Machine</th>
+                    <th scope="col" class="py-2.5 px-3">Action / Fault</th>
+                    <th scope="col" class="py-2.5 px-3">Est. Cost (₹)</th>
+                    <th scope="col" class="py-2.5 pl-3">Priority Status</th>
+                  </tr>
+                </thead>
+                <tbody id="workOrderTableBody" class="divide-y divide-slate-800"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TABPANEL 2: KEYBOARD-NAVIGABLE 7-SLIDE EXECUTIVE PRESENTATION DECK  -->
+    <!-- =================================================================== -->
+    <div
+      id="panelPresentation"
+      role="tabpanel"
+      aria-labelledby="tabPresentation"
+      hidden
+      class="hidden flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-5"
+    >
+      <!-- Slide Navigation Header -->
+      <div class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-400/40 font-mono text-xs font-bold" id="slideProgressBadge">
+            Slide 1 of 7
+          </span>
+          <h2 class="text-sm sm:text-base font-bold text-white" id="slideTopTitle">
+            Executive Briefing: PulseGuard AI (₹ INR)
+          </h2>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onclick="readCurrentSlideAloud()"
+            class="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
+            <span>Read Slide Aloud</span>
+          </button>
+
+          <button
+            id="btnPrevSlide"
+            type="button"
+            onclick="changeSlide(-1)"
+            class="px-3.5 py-2 rounded-xl bg-[#162238] hover:bg-[#1f3050] border border-[#344a70] text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            <span>Previous</span>
+          </button>
+
+          <button
+            id="btnNextSlide"
+            type="button"
+            onclick="changeSlide(1)"
+            class="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Slide Quick-Jump Pills -->
+      <nav aria-label="Slide Selector" class="flex flex-wrap items-center gap-2" id="slideNavPills"></nav>
+
+      <!-- Main Slide Stage -->
+      <article
+        id="slideStage"
+        aria-live="polite"
+        class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-3xl p-6 sm:p-10 min-h-[400px] flex flex-col justify-center shadow-xl"
+      ></article>
+
+      <!-- Speaker Notes Panel -->
+      <section aria-labelledby="headingSpeakerNotes" class="hc-surface bg-[#11192b] border border-[#2b3d5e] rounded-2xl p-4">
+        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-300 mb-1.5">
+          <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+          <h3 id="headingSpeakerNotes">Presenter &amp; Screen-Reader Notes</h3>
+        </div>
+        <p id="slideSpeakerNotes" class="text-xs sm:text-sm text-slate-200 leading-relaxed"></p>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Semantic Footer -->
+  <footer class="hc-surface bg-[#0d1526] border-t border-[#2b3d5e] px-4 sm:px-6 py-4 text-xs text-slate-300">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+      <span>PulseGuard AI Predictive Maintenance Platform • Designed for WCAG 2.2 AA Accessibility</span>
+      <span class="font-mono">Currency: Indian Rupees (₹ INR) • Keyboard: Alt+1 / Alt+2 / Alt+R / ← →</span>
+    </div>
+  </footer>
+
+  <script>
+    // =========================================================================
+    // INDIAN NUMBERING FORMATTER (LAKHS & CRORES)
+    // =========================================================================
+    function formatRupees(value) {
+      const num = Math.round(Number(value) || 0);
+      const sign = num < 0 ? '-' : '';
+      return sign + '₹' + Math.abs(num).toLocaleString('en-IN');
+    }
+
+    // =========================================================================
+    // EQUIPMENT TELEMETRY STATE (ALL MONETARY VALUES IN ₹ INR)
+    // =========================================================================
+    const machines = [
+      {
+        id: 'M-101',
+        name: 'Induction Motor M-101',
+        subtitle: '75 kW Main Drive • 1,780 RPM',
+        condition: 'normal',
+        vibration: 1.45,
+        temperature: 56.4,
+        current: 42.8,
+        rul: 1480,
+        risk: 4.2,
+        downtimeCostPerHr: 145000,
+        plannedCost: 28500,
+        breakdownCost: 480000
+      },
+      {
+        id: 'P-204',
+        name: 'Centrifugal Pump P-204',
+        subtitle: 'Coolant Booster • 2,950 RPM',
+        condition: 'bearing',
+        vibration: 3.85,
+        temperature: 71.2,
+        current: 36.4,
+        rul: 260,
+        risk: 64.0,
+        downtimeCostPerHr: 165000,
+        plannedCost: 34000,
+        breakdownCost: 590000
+      },
+      {
+        id: 'G-302',
+        name: 'Gearbox G-302',
+        subtitle: 'Helical Reducer • 1,450 RPM',
+        condition: 'misalignment',
+        vibration: 4.15,
+        temperature: 74.6,
+        current: 51.2,
+        rul: 195,
+        risk: 71.5,
+        downtimeCostPerHr: 210000,
+        plannedCost: 42000,
+        breakdownCost: 760000
+      },
+      {
+        id: 'S-405',
+        name: 'CNC Spindle S-405',
+        subtitle: '5-Axis Milling • 12,000 RPM',
+        condition: 'normal',
+        vibration: 1.18,
+        temperature: 49.8,
+        current: 24.5,
+        rul: 1720,
+        risk: 3.1,
+        downtimeCostPerHr: 190000,
+        plannedCost: 31000,
+        breakdownCost: 640000
+      }
+    ];
+
+    const conditionProfiles = {
+      normal: {
+        statusLabel: 'NORMAL',
+        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50',
+        borderClass: 'border-emerald-400',
+        iconClass: 'fa-solid fa-circle-check text-emerald-400',
+        title: 'Normal Operating Signature',
+        summary: 'All vibration harmonics, bearing temperatures, and phase currents remain within healthy baseline bounds.',
+        vibration: 1.45,
+        temperature: 56.4,
+        current: 42.8,
+        rul: 1480,
+        risk: 4.2,
+        costFactor: 1.0,
+        drivers: [
+          { name: 'BPFI Bearing Band', pct: 12 },
+          { name: '2X Shaft Harmonic', pct: 16 },
+          { name: 'Thermal Gradient', pct: 14 },
+          { name: 'Current Imbalance', pct: 10 }
+        ],
+        fft: [
+          { band: '1X RPM', hz: '30 Hz', amp: 1.2, note: 'Normal rotational speed' },
+          { band: '2X Harmonic', hz: '60 Hz', amp: 0.4, note: 'Nominal coupling balance' },
+          { band: '3X Harmonic', hz: '90 Hz', amp: 0.3, note: 'Tight mechanical mounting' },
+          { band: 'BPFI Bearing', hz: '162 Hz', amp: 0.25, note: 'Healthy raceway' },
+          { band: 'High-Freq Band', hz: '420 Hz', amp: 0.2, note: 'Minimal friction noise' }
+        ]
+      },
+      bearing: {
+        statusLabel: 'WATCH',
+        badgeClass: 'bg-amber-400/20 text-amber-200 border-amber-300/60',
+        borderClass: 'border-amber-300',
+        iconClass: 'fa-solid fa-triangle-exclamation text-amber-300',
+        title: 'Early Inner-Race Bearing Wear (BPFI)',
+        summary: 'Impulsive energy spikes detected at 162 Hz BPFI harmonic. Schedule bearing replacement within 10 days to avoid seizure.',
+        vibration: 3.85,
+        temperature: 71.2,
+        current: 45.6,
+        rul: 260,
+        risk: 64.0,
+        costFactor: 1.15,
+        drivers: [
+          { name: 'BPFI Bearing Band', pct: 88 },
+          { name: 'Signal Kurtosis', pct: 76 },
+          { name: 'Thermal Gradient', pct: 48 },
+          { name: '2X Shaft Harmonic', pct: 29 }
+        ],
+        fft: [
+          { band: '1X RPM', hz: '30 Hz', amp: 1.6, note: 'Base shaft speed' },
+          { band: '2X Harmonic', hz: '60 Hz', amp: 0.9, note: 'Mild secondary modulation' },
+          { band: '3X Harmonic', hz: '90 Hz', amp: 0.7, note: 'Minor housing resonance' },
+          { band: 'BPFI Bearing', hz: '162 Hz', amp: 3.65, note: 'ALERT: Inner-race spalling' },
+          { band: 'High-Freq Band', hz: '420 Hz', amp: 1.9, note: 'Elevated metal impact' }
+        ]
+      },
+      misalignment: {
+        statusLabel: 'WATCH',
+        badgeClass: 'bg-amber-400/20 text-amber-200 border-amber-300/60',
+        borderClass: 'border-amber-300',
+        iconClass: 'fa-solid fa-triangle-exclamation text-amber-300',
+        title: 'Angular Shaft Misalignment (2X Peak)',
+        summary: 'Strong 2X rotational harmonic indicates coupling offset. Perform laser shaft alignment during planned weekend maintenance.',
+        vibration: 4.15,
+        temperature: 74.6,
+        current: 49.4,
+        rul: 195,
+        risk: 71.5,
+        costFactor: 1.2,
+        drivers: [
+          { name: '2X Shaft Harmonic', pct: 91 },
+          { name: 'Axial RMS Velocity', pct: 82 },
+          { name: 'Thermal Gradient', pct: 54 },
+          { name: 'BPFI Bearing Band', pct: 24 }
+        ],
+        fft: [
+          { band: '1X RPM', hz: '30 Hz', amp: 1.9, note: 'Base shaft speed' },
+          { band: '2X Harmonic', hz: '60 Hz', amp: 3.9, note: 'ALERT: Coupling misalignment' },
+          { band: '3X Harmonic', hz: '90 Hz', amp: 1.4, note: 'Coupling stress harmonic' },
+          { band: 'BPFI Bearing', hz: '162 Hz', amp: 0.6, note: 'Bearing load rising' },
+          { band: 'High-Freq Band', hz: '420 Hz', amp: 0.8, note: 'Moderate friction' }
+        ]
+      },
+      thermal: {
+        statusLabel: 'CRITICAL',
+        badgeClass: 'bg-rose-500/25 text-rose-200 border-rose-400/70',
+        borderClass: 'border-rose-400',
+        iconClass: 'fa-solid fa-circle-exclamation text-rose-300',
+        title: 'Critical Thermal Overload & Lubrication Loss',
+        summary: 'Bearing temperature exceeds 85°C threshold with broadband vibration surge. Immediate load reduction and inspection required.',
+        vibration: 6.72,
+        temperature: 89.4,
+        current: 57.8,
+        rul: 28,
+        risk: 93.8,
+        costFactor: 1.65,
+        drivers: [
+          { name: 'Thermal Gradient', pct: 96 },
+          { name: 'Broadband Vibration', pct: 90 },
+          { name: 'Current Overload', pct: 84 },
+          { name: 'BPFI Bearing Band', pct: 72 }
+        ],
+        fft: [
+          { band: '1X RPM', hz: '30 Hz', amp: 3.1, note: 'High unbalance energy' },
+          { band: '2X Harmonic', hz: '60 Hz', amp: 2.8, note: 'Thermal shaft expansion' },
+          { band: '3X Harmonic', hz: '90 Hz', amp: 2.5, note: 'Structural looseness' },
+          { band: 'BPFI Bearing', hz: '162 Hz', amp: 4.4, note: 'CRITICAL: Dry friction wear' },
+          { band: 'High-Freq Band', hz: '420 Hz', amp: 5.2, note: 'CRITICAL: Lubrication film breakdown' }
+        ]
+      }
+    };
+
+    let workOrders = [
+      { id: 'WO-2026-841', machine: 'G-302', action: 'Laser Shaft Coupling Alignment', cost: 42000, status: 'WATCH' },
+      { id: 'WO-2026-840', machine: 'P-204', action: 'Inner-Race Bearing Replacement', cost: 34000, status: 'WATCH' },
+      { id: 'WO-2026-839', machine: 'M-101', action: 'Synthetic Grease & Insulation Test', cost: 17500, status: 'NORMAL' }
+    ];
+
+    let trendSamples = [
+      { label: 'T-9', vib: 1.38, temp: 55.8, curr: 42.1 },
+      { label: 'T-8', vib: 1.40, temp: 55.9, curr: 42.3 },
+      { label: 'T-7', vib: 1.42, temp: 56.0, curr: 42.4 },
+      { label: 'T-6', vib: 1.39, temp: 56.1, curr: 42.2 },
+      { label: 'T-5', vib: 1.44, temp: 56.2, curr: 42.6 },
+      { label: 'T-4', vib: 1.43, temp: 56.3, curr: 42.5 },
+      { label: 'T-3', vib: 1.46, temp: 56.3, curr: 42.7 },
+      { label: 'T-2', vib: 1.44, temp: 56.4, curr: 42.8 },
+      { label: 'T-1', vib: 1.47, temp: 56.5, curr: 42.9 },
+      { label: 'Now', vib: 1.45, temp: 56.4, curr: 42.8 }
+    ];
+
+    let selectedMachineIndex = 0;
+    let isStreamPaused = false;
+    let isReducedMotion = false;
+    let currentSlide = 0;
+    let sampleCounter = 10;
+
+    // =========================================================================
+    // SCREEN READER ANNOUNCER & VISIBLE TOAST
+    // =========================================================================
+    function announce(message, assertive = false) {
+      const target = document.getElementById(assertive ? 'assertiveAnnouncer' : 'politeAnnouncer');
+      target.textContent = '';
+      setTimeout(() => {
+        target.textContent = message;
+      }, 40);
+
+      const toast = document.getElementById('statusToast');
+      const toastText = document.getElementById('statusToastText');
+      toastText.textContent = message;
+      toast.classList.remove('hidden');
+      clearTimeout(window.__toastTimeout);
+      window.__toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    // =========================================================================
+    // ACCESSIBILITY TOOLBAR TOGGLES & SPEECH SYNTHESIS
+    // =========================================================================
+    function toggleHighContrast() {
+      const active = document.documentElement.classList.toggle('high-contrast');
+      document.getElementById('btnHighContrast').setAttribute('aria-pressed', String(active));
+      drawTrendChart();
+      drawFftChart();
+      announce(active ? 'High contrast mode enabled.' : 'High contrast mode disabled.');
+    }
+
+    function toggleLargeText() {
+      const active = document.documentElement.classList.toggle('large-text');
+      document.getElementById('btnLargeText').setAttribute('aria-pressed', String(active));
+      announce(active ? 'Large text and dyslexia-friendly spacing enabled.' : 'Standard text sizing restored.');
+    }
+
+    function toggleReducedMotion() {
+      isReducedMotion = !isReducedMotion;
+      document.documentElement.classList.toggle('reduced-motion', isReducedMotion);
+      document.getElementById('btnReducedMotion').setAttribute('aria-pressed', String(isReducedMotion));
+      if (isReducedMotion && !isStreamPaused) {
+        toggleStreamPause(true);
+      }
+      announce(isReducedMotion ? 'Reduced motion enabled; live chart animations paused.' : 'Reduced motion disabled.');
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) {
+        announce('Speech synthesis is not supported in this browser.', true);
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-IN';
+      utterance.rate = 0.98;
+      const btn = document.getElementById('btnReadAloud');
+      const label = document.getElementById('readAloudLabel');
+      btn.setAttribute('aria-pressed', 'true');
+      label.textContent = 'Reading Aloud...';
+      utterance.onend = () => {
+        btn.setAttribute('aria-pressed', 'false');
+        label.textContent = 'Read Aloud (Alt+R)';
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function readCurrentViewAloud() {
+      const isDeckOpen = !document.getElementById('panelPresentation').classList.contains('hidden');
+      if (isDeckOpen) {
+        readCurrentSlideAloud();
+        return;
+      }
+      const m = machines[selectedMachineIndex];
+      const prof = conditionProfiles[m.condition];
+      const planned = Math.round(m.plannedCost * prof.costFactor);
+      const summary = `${m.name}. Status: ${prof.statusLabel}. ${prof.title}. Vibration ${m.vibration.toFixed(2)} millimeters per second, Temperature ${m.temperature.toFixed(1)} degrees Celsius, Remaining Useful Life ${m.rul} hours, Failure Risk ${m.risk.toFixed(1)} percent. Downtime cost is ${formatRupees(m.downtimeCostPerHr)} per hour. Planned repair cost is ${formatRupees(planned)} compared to ${formatRupees(m.breakdownCost)} for unplanned breakdown.`;
+      speakText(summary);
+    }
+
+    // =========================================================================
+    // TABLIST NAVIGATION (LIVE DASHBOARD <-> PRESENTATION DECK)
+    // =========================================================================
+    function activateTab(tabName) {
+      const tabDash = document.getElementById('tabDashboard');
+      const tabPres = document.getElementById('tabPresentation');
+      const panelDash = document.getElementById('panelDashboard');
+      const panelPres = document.getElementById('panelPresentation');
+
+      if (tabName === 'presentation') {
+        tabDash.setAttribute('aria-selected', 'false');
+        tabDash.tabIndex = -1;
+        tabDash.className = 'px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-200 hover:text-white flex items-center gap-2 cursor-pointer';
+
+        tabPres.setAttribute('aria-selected', 'true');
+        tabPres.tabIndex = 0;
+        tabPres.className = 'px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 flex items-center gap-2 cursor-pointer';
+
+        panelDash.hidden = true;
+        panelDash.classList.add('hidden');
+        panelPres.hidden = false;
+        panelPres.classList.remove('hidden');
+        renderPresentationSlide();
+        announce('Switched to Presentation Deck mode. Use Left and Right arrow keys to navigate slides.');
+      } else {
+        tabPres.setAttribute('aria-selected', 'false');
+        tabPres.tabIndex = -1;
+        tabPres.className = 'px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-200 hover:text-white flex items-center gap-2 cursor-pointer';
+
+        tabDash.setAttribute('aria-selected', 'true');
+        tabDash.tabIndex = 0;
+        tabDash.className = 'px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 flex items-center gap-2 cursor-pointer';
+
+        panelPres.hidden = true;
+        panelPres.classList.add('hidden');
+        panelDash.hidden = false;
+        panelDash.classList.remove('hidden');
+        drawTrendChart();
+        drawFftChart();
+        announce('Switched to Live Equipment Telemetry Dashboard.');
+      }
+    }
+
+    // =========================================================================
+    // MACHINE SELECTOR & FAULT INJECTION
+    // =========================================================================
+    function renderMachineSelector() {
+      const group = document.getElementById('machineSelectorGroup');
+      group.innerHTML = '';
+
+      machines.forEach((m, index) => {
+        const prof = conditionProfiles[m.condition];
+        const selected = index === selectedMachineIndex;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('role', 'radio');
+        btn.setAttribute('aria-checked', String(selected));
+        btn.className = `w-full text-left p-3.5 rounded-xl border transition cursor-pointer ${
+          selected
+            ? 'hc-card bg-[#1a2944] border-sky-400 shadow-md'
+            : 'hc-card bg-[#162238] border-[#2b3d5e] hover:border-sky-300'
+        }`;
+
+        btn.onclick = () => {
+          selectedMachineIndex = index;
+          renderMachineSelector();
+          updateDashboardUI();
+          announce(`Selected ${m.name}, status ${prof.statusLabel}, RUL ${m.rul} hours.`);
+        };
+
+        btn.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-xs sm:text-sm text-white">${m.name}</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border ${prof.badgeClass}">
+              <i class="${prof.iconClass}" aria-hidden="true"></i>
+              <span>${prof.statusLabel}</span>
+            </span>
+          </div>
+          <div class="text-xs text-slate-300 mt-1">${m.subtitle}</div>
+          <div class="flex items-center justify-between text-xs font-mono text-slate-200 mt-2 pt-2 border-t border-slate-700/70">
+            <span>RUL: ${m.rul.toLocaleString('en-IN')}h</span>
+            <span>Risk: ${m.risk.toFixed(1)}%</span>
+          </div>
+        `;
+        group.appendChild(btn);
+      });
+    }
+
+    function injectCondition(conditionKey) {
+      const m = machines[selectedMachineIndex];
+      const prof = conditionProfiles[conditionKey];
+      m.condition = conditionKey;
+      m.vibration = prof.vibration;
+      m.temperature = prof.temperature;
+      m.current = prof.current;
+      m.rul = prof.rul;
+      m.risk = prof.risk;
+
+      // Seed recent trend points to match injected state
+      trendSamples = trendSamples.map((s, idx) => ({
+        label: s.label,
+        vib: Number((prof.vibration * (0.94 + idx * 0.007)).toFixed(2)),
+        temp: Number((prof.temperature - (9 - idx) * 0.25).toFixed(1)),
+        curr: Number((prof.current - (9 - idx) * 0.1).toFixed(1))
+      }));
+
+      renderMachineSelector();
+      updateDashboardUI();
+
+      const isCritical = conditionKey === 'thermal';
+      announce(
+        `${isCritical ? 'CRITICAL ALERT: ' : ''}${m.name} condition set to ${prof.title}. Failure risk ${m.risk.toFixed(1)} percent, RUL ${m.rul} hours.`,
+        isCritical
+      );
+    }
+
+    // =========================================================================
+    // UPDATE DASHBOARD METRICS, TABLES & CHARTS
+    // =========================================================================
+    function updateDashboardUI() {
+      const m = machines[selectedMachineIndex];
+      const prof = conditionProfiles[m.condition];
+      const plannedCost = Math.round(m.plannedCost * prof.costFactor);
+      const netSaved = Math.max(0, m.breakdownCost - plannedCost);
+
+      document.getElementById('activeAssetHeading').textContent = m.name;
+
+      const badge = document.getElementById('activeStatusBadge');
+      badge.className = `inline-flex items-center gap-1.5 text-xs font-mono font-bold px-3 py-1 rounded-full border ${prof.badgeClass}`;
+      badge.innerHTML = `<i class="${prof.iconClass}" aria-hidden="true"></i><span>${prof.statusLabel}</span>`;
+
+      document.getElementById('activeCostHeadline').textContent =
+        `Preventive action costs ${formatRupees(plannedCost)} vs ${formatRupees(m.breakdownCost)} unplanned breakdown — Net ${formatRupees(netSaved)} saved.`;
+
+      document.getElementById('bannerDowntimeCost').textContent = `${formatRupees(m.downtimeCostPerHr)}/hr`;
+      document.getElementById('bannerPlannedCost').textContent = formatRupees(plannedCost);
+      document.getElementById('bannerBreakdownCost').textContent = formatRupees(m.breakdownCost);
+
+      // Gauges
+      document.getElementById('gaugeVibration').textContent = `${m.vibration.toFixed(2)} mm/s`;
+      document.getElementById('gaugeTemperature').textContent = `${m.temperature.toFixed(1)} °C`;
+      document.getElementById('gaugeCurrent').textContent = `${m.current.toFixed(1)} A`;
+      document.getElementById('gaugeRul').textContent = `${m.rul.toLocaleString('en-IN')} hrs`;
+      document.getElementById('gaugeRulDays').textContent = `~${Math.max(1, Math.round(m.rul / 24))} days to service`;
+
+      const riskEl = document.getElementById('gaugeRisk');
+      riskEl.textContent = `${m.risk.toFixed(1)}%`;
+      riskEl.className = `text-2xl font-mono font-extrabold mt-2 ${
+        m.risk >= 80 ? 'text-rose-300' : m.risk >= 40 ? 'text-amber-300' : 'text-emerald-300'
+      }`;
+      document.getElementById('gaugeRiskLabel').textContent =
+        m.risk >= 80 ? 'Immediate intervention advised' : m.risk >= 40 ? 'Schedule preventive repair' : 'Low probability window';
+
+      // Diagnosis Card
+      const callout = document.getElementById('diagnosisCallout');
+      callout.className = `hc-card p-4 rounded-xl bg-[#162238] border-l-4 ${prof.borderClass}`;
+      document.getElementById('diagnosisIcon').className = prof.iconClass;
+      document.getElementById('diagnosisTitle').textContent = prof.title;
+      document.getElementById('diagnosisSummary').textContent = prof.summary;
+
+      // Feature Drivers
+      const driversEl = document.getElementById('featureDriverBars');
+      driversEl.innerHTML = prof.drivers.map(d => {
+        const barColor = d.pct >= 80 ? 'bg-rose-400' : d.pct >= 45 ? 'bg-amber-300' : 'bg-sky-400';
+        return `
+          <div class="flex items-center gap-3 text-xs">
+            <span class="w-36 text-slate-200 font-medium truncate">${d.name}</span>
+            <div class="flex-1 h-2.5 bg-[#090e1a] rounded-full overflow-hidden border border-slate-700" role="progressbar" aria-label="${d.name}" aria-valuenow="${d.pct}" aria-valuemin="0" aria-valuemax="100">
+              <div class="h-full ${barColor}" style="width:${d.pct}%"></div>
+            </div>
+            <span class="w-10 text-right font-mono font-bold text-slate-200">${d.pct}%</span>
+          </div>
+        `;
+      }).join('');
+
+      // Accessible Data Tables for Charts
+      document.getElementById('trendDataTableBody').innerHTML = trendSamples.map(row => `
+        <tr>
+          <td class="py-1.5 pr-3 text-slate-200">${row.label}</td>
+          <td class="py-1.5 px-3 text-sky-300">${row.vib.toFixed(2)}</td>
+          <td class="py-1.5 px-3 text-amber-300">${row.temp.toFixed(1)}</td>
+          <td class="py-1.5 pl-3 text-slate-200">${row.curr.toFixed(1)}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('fftDataTableBody').innerHTML = prof.fft.map(band => `
+        <tr>
+          <td class="py-1.5 pr-3 font-bold text-white">${band.band}</td>
+          <td class="py-1.5 px-3 text-slate-300">${band.hz}</td>
+          <td class="py-1.5 px-3 text-sky-300">${band.amp.toFixed(2)}</td>
+          <td class="py-1.5 pl-3 font-sans text-slate-200">${band.note}</td>
+        </tr>
+      `).join('');
+
+      drawTrendChart();
+      drawFftChart();
+    }
+
+    function toggleChartTable(type) {
+      const isTrend = type === 'trend';
+      const btn = document.getElementById(isTrend ? 'btnToggleTrendTable' : 'btnToggleFftTable');
+      const canvasWrap = document.getElementById(isTrend ? 'trendCanvasWrapper' : 'fftCanvasWrapper');
+      const tableWrap = document.getElementById(isTrend ? 'trendTableWrapper' : 'fftTableWrapper');
+
+      const showingTable = tableWrap.classList.contains('hidden');
+      tableWrap.classList.toggle('hidden', !showingTable);
+      canvasWrap.classList.toggle('hidden', showingTable);
+      btn.setAttribute('aria-expanded', String(showingTable));
+      btn.innerHTML = showingTable
+        ? '<i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>View as Visual Chart</span>'
+        : '<i class="fa-solid fa-table" aria-hidden="true"></i><span>View as Data Table</span>';
+
+      if (!showingTable) {
+        isTrend ? drawTrendChart() : drawFftChart();
+      }
+      announce(showingTable ? 'Switched to accessible data table view.' : 'Switched to visual chart view.');
+    }
+
+    // =========================================================================
+    // CANVAS CHARTS (HIGH-CONTRAST & RESPONSIVE)
+    // =========================================================================
+    function syncCanvasSize(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        const w = Math.round(rect.width * dpr);
+        const h = Math.round(rect.height * dpr);
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+      }
+      return dpr;
+    }
+
+    function drawTrendChart() {
+      const canvas = document.getElementById('trendCanvas');
+      if (!canvas || canvas.offsetParent === null) return;
+      const dpr = syncCanvasSize(canvas);
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      const hc = document.documentElement.classList.contains('high-contrast');
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = hc ? '#000000' : '#090e1a';
+      ctx.fillRect(0, 0, W, H);
+
+      const padL = 44 * dpr;
+      const padR = 20 * dpr;
+      const padT = 22 * dpr;
+      const padB = 28 * dpr;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      // Grid lines
+      ctx.strokeStyle = hc ? '#555555' : '#1e2d4a';
+      ctx.lineWidth = 1 * dpr;
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + (plotH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(W - padR, y);
+        ctx.stroke();
+      }
+
+      // Vibration Line (0 - 8 mm/s scale)
+      ctx.strokeStyle = hc ? '#fde047' : '#38bdf8';
+      ctx.lineWidth = 3 * dpr;
+      ctx.beginPath();
+      trendSamples.forEach((s, i) => {
+        const x = padL + (i / (trendSamples.length - 1)) * plotW;
+        const y = padT + plotH - Math.min(1, s.vib / 8) * plotH;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Temperature Dashed Line (30 - 100 °C scale)
+      ctx.save();
+      ctx.setLineDash([6 * dpr, 4 * dpr]);
+      ctx.strokeStyle = hc ? '#00ffff' : '#fbbf24';
+      ctx.lineWidth = 2.5 * dpr;
+      ctx.beginPath();
+      trendSamples.forEach((s, i) => {
+        const x = padL + (i / (trendSamples.length - 1)) * plotW;
+        const norm = Math.max(0, Math.min(1, (s.temp - 30) / 70));
+        const y = padT + plotH - norm * plotH;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.restore();
+
+      // Legend & Axis Labels
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${11 * dpr}px "Inter", sans-serif`;
+      ctx.fillText('— Vibration (mm/s)', padL, 14 * dpr);
+      ctx.fillStyle = hc ? '#00ffff' : '#fbbf24';
+      ctx.fillText('-- Temp (°C)', padL + 135 * dpr, 14 * dpr);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = `${10 * dpr}px "JetBrains Mono", monospace`;
+      ctx.fillText('8.0', 8 * dpr, padT + 6 * dpr);
+      ctx.fillText('4.0', 8 * dpr, padT + plotH / 2 + 4 * dpr);
+      ctx.fillText('0.0', 8 * dpr, padT + plotH);
+    }
+
+    function drawFftChart() {
+      const canvas = document.getElementById('fftCanvas');
+      if (!canvas || canvas.offsetParent === null) return;
+      const dpr = syncCanvasSize(canvas);
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      const hc = document.documentElement.classList.contains('high-contrast');
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = hc ? '#000000' : '#090e1a';
+      ctx.fillRect(0, 0, W, H);
+
+      const m = machines[selectedMachineIndex];
+      const bands = conditionProfiles[m.condition].fft;
+
+      const padX = 24 * dpr;
+      const padT = 22 * dpr;
+      const padB = 34 * dpr;
+      const usableW = W - padX * 2;
+      const usableH = H - padT - padB;
+      const slotW = usableW / bands.length;
+
+      bands.forEach((b, i) => {
+        const ratio = Math.min(1, b.amp / 5.5);
+        const barH = Math.max(6 * dpr, ratio * usableH);
+        const barW = slotW * 0.62;
+        const x = padX + i * slotW + (slotW - barW) / 2;
+        const y = padT + usableH - barH;
+
+        ctx.fillStyle = b.amp >= 3.5 ? '#fb7185' : b.amp >= 2.0 ? '#fde047' : '#38bdf8';
+        ctx.fillRect(x, y, barW, barH);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${10 * dpr}px "JetBrains Mono", monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText(b.amp.toFixed(1), x + barW / 2, y - 5 * dpr);
+        ctx.fillText(b.band.split(' ')[0], x + barW / 2, H - 12 * dpr);
+      });
+      ctx.textAlign = 'left';
+    }
+
+    // =========================================================================
+    // WORK-ORDER GENERATOR & CSV EXPORT
+    // =========================================================================
+    function renderWorkOrderTable() {
+      const tbody = document.getElementById('workOrderTableBody');
+      tbody.innerHTML = workOrders.map(wo => {
+        const pillStyle =
+          wo.status === 'CRITICAL'
+            ? 'bg-rose-500/25 text-rose-200 border-rose-400/70'
+            : wo.status === 'WATCH'
+              ? 'bg-amber-400/20 text-amber-200 border-amber-300/60'
+              : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50';
+        const icon =
+          wo.status === 'CRITICAL'
+            ? 'fa-solid fa-circle-exclamation'
+            : wo.status === 'WATCH'
+              ? 'fa-solid fa-triangle-exclamation'
+              : 'fa-solid fa-circle-check';
+
+        return `
+          <tr>
+            <td class="py-2.5 pr-3 font-mono text-xs font-bold text-sky-300">${wo.id}</td>
+            <td class="py-2.5 px-3 font-mono text-xs font-bold text-white">${wo.machine}</td>
+            <td class="py-2.5 px-3 text-xs text-slate-200">${wo.action}</td>
+            <td class="py-2.5 px-3 font-mono text-xs font-bold text-emerald-300">${formatRupees(wo.cost)}</td>
+            <td class="py-2.5 pl-3">
+              <span class="inline-flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${pillStyle}">
+                <i class="${icon}" aria-hidden="true"></i>
+                <span>${wo.status}</span>
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalSpend = workOrders.reduce((sum, item) => sum + item.cost, 0);
+      document.getElementById('workOrderSummaryText').textContent =
+        `${workOrders.length} active orders • Total planned spend: ${formatRupees(totalSpend)}`;
+    }
+
+    function createWorkOrder() {
+      const m = machines[selectedMachineIndex];
+      const prof = conditionProfiles[m.condition];
+      const cost = Math.round(m.plannedCost * prof.costFactor);
+      const id = 'WO-2026-' + Math.floor(842 + Math.random() * 150);
+
+      workOrders.unshift({
+        id,
+        machine: m.id,
+        action: prof.title,
+        cost,
+        status: prof.statusLabel
+      });
+
+      renderWorkOrderTable();
+      announce(`Logged work order ${id} for ${m.name}. Estimated maintenance cost: ${formatRupees(cost)}.`);
+    }
+
+    function exportWorkOrdersCSV() {
+      const header = ['Order ID', 'Machine', 'Action / Fault', 'Estimated Cost (INR)', 'Priority Status'];
+      const rows = workOrders.map(w => [w.id, w.machine, `"${w.action}"`, w.cost, w.status]);
+      const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pulseguard_work_orders_inr.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      announce('Exported maintenance work orders CSV file in Indian Rupees.');
+    }
+
+    // =========================================================================
+    // STREAM PAUSE & LIVE TELEMETRY TICK
+    // =========================================================================
+    function toggleStreamPause(forcePause) {
+      isStreamPaused = typeof forcePause === 'boolean' ? forcePause : !isStreamPaused;
+      const btn = document.getElementById('btnPauseStream');
+      const statusText = document.getElementById('streamStatusText');
+
+      btn.setAttribute('aria-pressed', String(isStreamPaused));
+      if (isStreamPaused) {
+        btn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span>Resume Stream</span>';
+        statusText.textContent = 'TELEMETRY PAUSED';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i><span>Pause Stream</span>';
+        statusText.textContent = 'LIVE TELEMETRY • 100 Hz';
+      }
+      if (typeof forcePause !== 'boolean') {
+        announce(isStreamPaused ? 'Live sensor stream paused.' : 'Live sensor stream resumed.');
+      }
+    }
+
+    function liveTelemetryTick() {
+      if (isStreamPaused) return;
+      sampleCounter++;
+
+      machines.forEach(m => {
+        const prof = conditionProfiles[m.condition];
+        m.vibration = Math.max(0.4, prof.vibration + (Math.random() - 0.5) * 0.14);
+        m.temperature = Math.max(32, prof.temperature + (Math.random() - 0.5) * 0.4);
+        m.current = Math.max(10, prof.current + (Math.random() - 0.5) * 0.5);
+      });
+
+      const active = machines[selectedMachineIndex];
+      trendSamples.shift();
+      trendSamples.push({
+        label: `S-${sampleCounter}`,
+        vib: active.vibration,
+        temp: active.temperature,
+        curr: active.current
+      });
+
+      if (!document.getElementById('panelDashboard').classList.contains('hidden')) {
+        updateDashboardUI();
+      }
+    }
+
+    // =========================================================================
+    // 7-SLIDE ACCESSIBLE PRESENTATION DECK
+    // =========================================================================
+    const deckSlides = [
+      {
+        title: '1. Problem & ₹ Downtime Cost in Indian Manufacturing',
+        notes: 'Slide 1 outlines how unplanned equipment stoppages in Indian manufacturing plants cost ₹1,45,000 to ₹2,10,000 per hour, turning reactive repairs into ₹4,80,000+ breakdown losses.',
+        html: `
+          <div class="space-y-6">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40">
+              SLIDE 01 • BUSINESS PROBLEM
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+              Unplanned Machinery Breakdowns Cost Indian Plants ₹1,45,000+ Every Hour
+            </h3>
+            <p class="text-sm sm:text-lg text-slate-200 max-w-3xl leading-relaxed">
+              Reactive breakdown maintenance and rigid calendar part swaps create high ₹ downtime losses, emergency spare air-freight premiums, and collateral shaft or bearing damage.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4">
+                <div class="text-xs font-mono text-slate-300">HOURLY STOPPAGE LOSS</div>
+                <div class="text-2xl font-mono font-extrabold text-rose-300 mt-1">₹1,45,000/hr</div>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4">
+                <div class="text-xs font-mono text-slate-300">UNPLANNED BREAKDOWN</div>
+                <div class="text-2xl font-mono font-extrabold text-amber-300 mt-1">₹4,80,000</div>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4">
+                <div class="text-xs font-mono text-slate-300">PLANNED REPAIR</div>
+                <div class="text-2xl font-mono font-extrabold text-emerald-300 mt-1">₹28,500</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: '2. End-to-End System Architecture',
+        notes: 'Slide 2 explains the four-stage architecture: Edge sensors stream triaxial vibration and temperature, FFT extracts harmonic frequencies, ML models predict faults and RUL, and operators receive ₹ work orders.',
+        html: `
+          <div class="space-y-6">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40">
+              SLIDE 02 • SYSTEM ARCHITECTURE
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white">
+              Edge Sensors → FFT Signal Engine → ML Models → ₹ Action
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-sky-300">01 • EDGE SENSORS</div>
+                <h4 class="text-base font-bold text-white mt-1">100 Hz Telemetry</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Triaxial vibration (mm/s), bearing RTD temperature (°C), and 3-phase motor current (A).</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-sky-300">02 • FFT EXTRACTION</div>
+                <h4 class="text-base font-bold text-white mt-1">Spectral Harmonics</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Transforms raw waveforms into 1X RPM, 2X misalignment, 3X looseness, and BPFI bearing peaks.</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-amber-300">03 • AI INFERENCE</div>
+                <h4 class="text-base font-bold text-white mt-1">XGBoost + LSTM</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Classifies mechanical fault mode and predicts Remaining Useful Life (RUL) in operating hours.</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-emerald-300">04 • ₹ WORK ORDERS</div>
+                <h4 class="text-base font-bold text-white mt-1">CMMS Dispatch</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Generates prioritized maintenance tickets with ₹ repair cost estimates and CSV audit logs.</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: '3. Live Diagnostics & Failure Modes',
+        notes: 'Slide 3 covers the three primary rotating machinery failure signatures monitored by PulseGuard AI: Inner-race bearing wear at 162 Hz BPFI, angular shaft misalignment at 2X RPM, and thermal overload above 85 degrees Celsius.',
+        html: `
+          <div class="space-y-6">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/60">
+              SLIDE 03 • FAILURE DIAGNOSTICS
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white">
+              Detecting Mechanical Faults Weeks Before Breakdown
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="flex items-center gap-2 text-amber-300 font-bold text-base">
+                  <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                  <span>Bearing Wear (BPFI)</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2 leading-relaxed">
+                  High-frequency impacts at 162 Hz Ball Pass Frequency Inner-race catch micro-spalling 10 to 14 days early.
+                </p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="flex items-center gap-2 text-sky-300 font-bold text-base">
+                  <i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i>
+                  <span>Shaft Misalignment (2X)</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2 leading-relaxed">
+                  Dominant 2X rotational frequency amplitude pinpoints coupling offset before seal or gearbox failure.
+                </p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="flex items-center gap-2 text-rose-300 font-bold text-base">
+                  <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                  <span>Thermal Overload</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2 leading-relaxed">
+                  Temperatures exceeding 85°C paired with broadband friction noise trigger immediate load derating alerts.
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: '4. AI Model Performance & Reliability',
+        notes: 'Slide 4 highlights benchmark validation accuracy: 97.6 percent for inner-race bearing wear, 95.8 percent for shaft misalignment, 96.4 percent for thermal overload, and 92.5 percent RUL window accuracy.',
+        html: `
+          <div class="space-y-5">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50">
+              SLIDE 04 • MODEL BENCHMARKS
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white">
+              High-Precision Fault Classification &amp; Low False Alarms
+            </h3>
+            <div class="space-y-4 max-w-4xl">
+              <div>
+                <div class="flex justify-between text-xs sm:text-sm font-bold mb-1">
+                  <span class="text-white">Inner-Race Bearing Spalling Detection</span>
+                  <span class="font-mono text-sky-300">97.6%</span>
+                </div>
+                <div class="w-full h-3 bg-[#090e1a] rounded-full overflow-hidden border border-slate-700">
+                  <div class="h-full bg-sky-400" style="width:97.6%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs sm:text-sm font-bold mb-1">
+                  <span class="text-white">Angular Shaft Misalignment (2X Harmonic)</span>
+                  <span class="font-mono text-sky-300">95.8%</span>
+                </div>
+                <div class="w-full h-3 bg-[#090e1a] rounded-full overflow-hidden border border-slate-700">
+                  <div class="h-full bg-sky-400" style="width:95.8%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs sm:text-sm font-bold mb-1">
+                  <span class="text-white">Thermal Overload &amp; Lubrication Faults</span>
+                  <span class="font-mono text-amber-300">96.4%</span>
+                </div>
+                <div class="w-full h-3 bg-[#090e1a] rounded-full overflow-hidden border border-slate-700">
+                  <div class="h-full bg-amber-300" style="width:96.4%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs sm:text-sm font-bold mb-1">
+                  <span class="text-white">Remaining Useful Life (RUL) Window Accuracy</span>
+                  <span class="font-mono text-emerald-300">92.5%</span>
+                </div>
+                <div class="w-full h-3 bg-[#090e1a] rounded-full overflow-hidden border border-slate-700">
+                  <div class="h-full bg-emerald-400" style="width:92.5%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: '5. Plant ROI & Cost Breakdown in ₹ INR',
+        notes: 'Slide 5 presents the financial case in Indian Rupees: ₹18,50,000 total plant CapEx delivers ₹1,12,00,000 in annual savings, achieving full payback in 2.0 months and a 505 percent first-year ROI.',
+        html: `
+          <div class="space-y-6">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/60">
+              SLIDE 05 • ₹ INR RETURN ON INVESTMENT
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white">
+              2.0-Month Payback on ₹18,50,000 Plant Deployment
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="text-xs font-mono text-slate-300">TOTAL PLANT CAPEX</div>
+                <div class="text-2xl sm:text-3xl font-mono font-extrabold text-white mt-2">₹18,50,000</div>
+                <p class="text-xs text-slate-300 mt-1.5">Sensors, edge gateways &amp; integration</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="text-xs font-mono text-emerald-300">ANNUAL SAVINGS</div>
+                <div class="text-2xl sm:text-3xl font-mono font-extrabold text-emerald-300 mt-2">₹1,12,00,000</div>
+                <p class="text-xs text-slate-300 mt-1.5">Avoided downtime + spare optimization</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="text-xs font-mono text-sky-300">YEAR-1 NET GAIN</div>
+                <div class="text-2xl sm:text-3xl font-mono font-extrabold text-sky-300 mt-2">₹93,50,000</div>
+                <p class="text-xs text-slate-300 mt-1.5">Net savings after full CapEx recovery</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="text-xs font-mono text-amber-300">FIRST-YEAR ROI</div>
+                <div class="text-2xl sm:text-3xl font-mono font-extrabold text-amber-300 mt-2">505%</div>
+                <p class="text-xs text-slate-300 mt-1.5">Full payback in 2.0 months</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: '6. Phased Plant Implementation Roadmap',
+        notes: 'Slide 6 outlines a 12-week rollout across four phases: Weeks 1-3 sensor installation on critical rotating assets, Weeks 4-6 baseline data collection, Weeks 7-9 ML model tuning, and Weeks 10-12 CMMS work-order automation.',
+        html: `
+          <div class="space-y-6">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40">
+              SLIDE 06 • 12-WEEK ROLLOUT
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white">
+              Structured 4-Phase Deployment Without Line Disruption
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-sky-300">WEEKS 1–3</div>
+                <h4 class="text-base font-bold text-white mt-1">Sensor Retrofitting</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Magnetic-mount accelerometers &amp; RTD probes on motors, pumps, gearboxes, and spindles.</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-sky-300">WEEKS 4–6</div>
+                <h4 class="text-base font-bold text-white mt-1">Baseline Profiling</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Capture normal load signatures across shift cycles and establish ISO vibration thresholds.</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-amber-300">WEEKS 7–9</div>
+                <h4 class="text-base font-bold text-white mt-1">AI Model Calibration</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Train XGBoost fault classifiers and LSTM RUL estimators on plant spectral profiles.</p>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-5">
+                <div class="font-mono text-xs font-bold text-emerald-300">WEEKS 10–12</div>
+                <h4 class="text-base font-bold text-white mt-1">₹ Work-Order Go-Live</h4>
+                <p class="text-xs sm:text-sm text-slate-200 mt-2">Enable automated work-order dispatch, CSV reporting, and shift engineer alerts.</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: '7. Accessibility & Inclusive Operator Design',
+        notes: 'Slide 7 highlights WCAG 2.2 AA compliance built into PulseGuard AI: high-contrast mode, dyslexia-friendly spacing, reduced motion, full keyboard shortcuts, screen-reader live regions, data table alternatives for charts, and spoken audio readout.',
+        html: `
+          <div class="space-y-6">
+            <span class="inline-block font-mono text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/50">
+              SLIDE 07 • WCAG 2.2 AA INCLUSIVE DESIGN
+            </span>
+            <h3 class="text-2xl sm:text-4xl font-extrabold text-white">
+              Built Accessible for Every Engineer &amp; Operator
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4 flex items-start gap-3">
+                <i class="fa-solid fa-eye text-sky-300 text-lg mt-1" aria-hidden="true"></i>
+                <div>
+                  <h4 class="font-bold text-white text-sm sm:text-base">High Contrast &amp; Non-Color Cues</h4>
+                  <p class="text-xs sm:text-sm text-slate-200 mt-1">7:1+ contrast toggle plus icons and text badges (NORMAL, WATCH, CRITICAL) on every alert.</p>
+                </div>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4 flex items-start gap-3">
+                <i class="fa-solid fa-table text-amber-300 text-lg mt-1" aria-hidden="true"></i>
+                <div>
+                  <h4 class="font-bold text-white text-sm sm:text-base">Data Table Alternatives for Charts</h4>
+                  <p class="text-xs sm:text-sm text-slate-200 mt-1">One-click toggle converts Telemetry and FFT charts into structured screen-reader tables.</p>
+                </div>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4 flex items-start gap-3">
+                <i class="fa-solid fa-keyboard text-emerald-300 text-lg mt-1" aria-hidden="true"></i>
+                <div>
+                  <h4 class="font-bold text-white text-sm sm:text-base">Full Keyboard &amp; Reduced Motion</h4>
+                  <p class="text-xs sm:text-sm text-slate-200 mt-1">3px focus rings, skip links, Alt+1 / Alt+2 / Alt+R shortcuts, and instant motion pause.</p>
+                </div>
+              </div>
+              <div class="hc-card bg-[#162238] border border-[#2b3d5e] rounded-2xl p-4 flex items-start gap-3">
+                <i class="fa-solid fa-volume-high text-rose-300 text-lg mt-1" aria-hidden="true"></i>
+                <div>
+                  <h4 class="font-bold text-white text-sm sm:text-base">Web Speech Audio Readout</h4>
+                  <p class="text-xs sm:text-sm text-slate-200 mt-1">Hands-free spoken status summaries and slide narration for floor engineers.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    function renderPresentationSlide() {
+      const slide = deckSlides[currentSlide];
+      document.getElementById('slideProgressBadge').textContent = `Slide ${currentSlide + 1} of ${deckSlides.length}`;
+      document.getElementById('slideTopTitle').textContent = slide.title;
+      document.getElementById('slideStage').innerHTML = slide.html;
+      document.getElementById('slideSpeakerNotes').textContent = slide.notes;
+
+      const pills = document.getElementById('slideNavPills');
+      pills.innerHTML = deckSlides.map((s, idx) => {
+        const active = idx === currentSlide;
+        return `
+          <button
+            type="button"
+            aria-current="${active ? 'step' : 'false'}"
+            aria-label="Go to ${s.title}"
+            onclick="goToSlide(${idx})"
+            class="px-3 py-1.5 rounded-lg font-mono text-xs font-bold border cursor-pointer ${
+              active
+                ? 'bg-sky-500 text-slate-950 border-sky-400'
+                : 'bg-[#162238] text-slate-200 border-[#2b3d5e] hover:border-sky-300'
+            }"
+          >
+            ${idx + 1}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function changeSlide(delta) {
+      currentSlide = (currentSlide + delta + deckSlides.length) % deckSlides.length;
+      renderPresentationSlide();
+      announce(`Slide ${currentSlide + 1} of ${deckSlides.length}: ${deckSlides[currentSlide].title}`);
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      renderPresentationSlide();
+      announce(`Slide ${currentSlide + 1} of ${deckSlides.length}: ${deckSlides[currentSlide].title}`);
+    }
+
+    function readCurrentSlideAloud() {
+      const slide = deckSlides[currentSlide];
+      speakText(`Slide ${currentSlide + 1} of ${deckSlides.length}. ${slide.title}. ${slide.notes}`);
+    }
+
+    // =========================================================================
+    // GLOBAL KEYBOARD SHORTCUTS (Alt+1, Alt+2, Alt+R, ArrowLeft, ArrowRight)
+    // =========================================================================
+    document.addEventListener('keydown', e => {
+      if (e.altKey && e.key === '1') {
+        e.preventDefault();
+        activateTab('dashboard');
+      } else if (e.altKey && e.key === '2') {
+        e.preventDefault();
+        activateTab('presentation');
+      } else if (e.altKey && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        readCurrentViewAloud();
+      } else if (!document.getElementById('panelPresentation').classList.contains('hidden')) {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          changeSlide(1);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          changeSlide(-1);
+        }
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (!document.getElementById('panelDashboard').classList.contains('hidden')) {
+        drawTrendChart();
+        drawFftChart();
+      }
+    });
+
+    // =========================================================================
+    // INITIALIZATION
+    // =========================================================================
+    renderMachineSelector();
+    updateDashboardUI();
+    renderWorkOrderTable();
+    setInterval(liveTelemetryTick, 1200);
+  </script>
+</body>
+</html>
